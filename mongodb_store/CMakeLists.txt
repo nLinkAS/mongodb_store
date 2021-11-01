@@ -172,7 +172,7 @@ install(TARGETS example_mongodb_store_cpp_client example_multi_event_log message
 if (CATKIN_ENABLE_TESTING)
   find_package(catkin REQUIRED COMPONENTS rostest)
 
-  add_rostest(tests/message_store.test)
+  # add_rostest(tests/message_store.test)
   add_rostest(tests/config_manager.test)
   add_rostest(tests/replication.test)
 
