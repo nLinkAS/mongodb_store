@@ -273,10 +273,10 @@ class WorkerProcess(object):
 
                     except InvalidDocument, e:
                         print("InvalidDocument " + current_process().name + "@" + topic +": \n")
-                        print e
+                        print(e)
                     except InvalidStringData, e:
                         print("InvalidStringData " + current_process().name + "@" + topic +": \n")
-                        print e
+                        print(e)
 
             else:
                 #print("Quit W2: %s" % self.name)
