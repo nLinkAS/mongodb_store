@@ -258,7 +258,7 @@ class ConfigManager(object):
     Set the local site-specific parameter.
     """
     def _setparam_srv_cb(self,req):
-        print ("parse json")
+        print("parse json")
         new = json.loads(req.param)
         if _PY3:
             if not ("path" in new and "value" in new):
