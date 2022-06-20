@@ -177,6 +177,8 @@ class ConfigManager(object):
             val=param["value"]
             if val is not None:
                 rospy.set_param(name,val)
+                if defaults_collection.find_one({"path":name}) is None:
+                    rospy.logwarn("Found default-less parameter %s set to %s in local collection", name, val)
             else:
                 rospy.logerr("Unable to set parameter %, its value is None.", name)
 
@@ -195,6 +197,10 @@ class ConfigManager(object):
         self._resetparams_srv = rospy.Service("/config_manager/reset_params",
                                            Trigger,
                                            self._resetparams_srv_cb)
+
+        self._deleteparams_srv = rospy.Service("/config_manager/delete_defaultless_params",
+                                           Trigger,
+                                           self._delete_defaultless_params_from_local_db_srv_cb)
         #self._list_params()
 
         # Start the main loop
@@ -284,6 +290,24 @@ class ConfigManager(object):
             config_db_local.update(value, new, manipulate=True)
 
         return SetParamResponse(True)
+
+    # Delete all parameters found in the local database but not in the defaults collection
+    # This happens when someone uses SetParam for a parameter not defined in defaults.
+    def _delete_defaultless_params_from_local_db_srv_cb(self, req):
+        defaults_collection = self._database.defaults
+        local_collection = self._database.local
+
+        msg = 'Deleted: '
+
+        for param in local_collection.find():
+            name = param["path"]
+            exist_in_defaults = defaults_collection.find_one({"path": name}, manipulate=False)
+            if not exist_in_defaults:
+                # Delete entry in local database
+                self._database.local.delete_one({"path": name})
+                msg += name + ', '
+
+        return TriggerResponse(success=True, message=msg)
 
     # Reset all parameters to their default value by wiping all entries in the local database
     def _resetparams_srv_cb(self, req):
