@@ -198,12 +198,14 @@ class ConfigManager(object):
                     rospy.set_param(name,val)
                 else:
                     rospy.logerr("Unable to set parameter %, its value is None.", name)
+
+        warn_if_stored_param_has_no_default = rospy.get_param("~warn_if_stored_param_has_no_default", False)
         for param in local_collection.find():
             name=param["path"]
             val=param["value"]
             if val is not None:
                 rospy.set_param(name,val)
-                if defaults_collection.find_one({"path":name}) is None:
+                if warn_if_stored_param_has_no_default and defaults_collection.find_one({"path":name}) is None:
                     rospy.logwarn("Found default-less parameter %s set to %s in local collection", name, val)
             else:
                 rospy.logerr("Unable to set parameter %, its value is None.", name)
@@ -225,9 +227,13 @@ class ConfigManager(object):
                                            Trigger,
                                            self._resetparams_srv_cb)
 
-        self._deleteparams_srv = rospy.Service("/config_manager/delete_defaultless_params",
-                                           Trigger,
-                                           self._delete_defaultless_params_from_local_db_srv_cb)
+        self._list_params_srv = rospy.Service("/config_manager/list_params",
+                                           ListParams,
+                                           self._listparams_srv_cb)
+
+        self._resetsingleparam_srv = rospy.Service("/config_manager/reset_single_param",
+                                           ResetParam,
+                                           self._resetsingleparam_srv_cb)
         #self._list_params()
 
         # Start the main loop
@@ -313,23 +319,43 @@ class ConfigManager(object):
 
         return SetParamResponse(True)
 
-    # Delete all parameters found in the local database but not in the defaults collection
-    # This happens when someone uses SetParam for a parameter not defined in defaults.
-    def _delete_defaultless_params_from_local_db_srv_cb(self, req):
+    # List all params stored in the db
+    def _listparams_srv_cb(self, req):
         defaults_collection = self._database.defaults
         local_collection = self._database.local
 
-        msg = 'Deleted: '
+        params = {}
+        for param in defaults_collection.find():
+            params[param["path"]] = {}
+            params[param["path"]]["default_value"] = param["value"]
+            params[param["path"]]["from_file"] = param["from_file"]
 
         for param in local_collection.find():
-            name = param["path"]
-            exist_in_defaults = defaults_collection.find_one({"path": name}, manipulate=False)
-            if not exist_in_defaults:
-                # Delete entry in local database
-                self._database.local.delete_one({"path": name})
-                msg += name + ', '
+            if not params.has_key(param["path"]):
+                params[param["path"]] = {}
+            params[param["path"]]["local_value"] = param["value"]
 
-        return TriggerResponse(success=True, message=msg)
+        return ListParamsResponse(success=True, params=json.dumps(params))
+
+    # Reset a parameters to its default value by wiping the entry in the local database
+    def _resetsingleparam_srv_cb(self, req):
+        defaults_collection = self._database.defaults
+        local_collection = self._database.local
+
+        entry_in_defaults = defaults_collection.find_one({"path": req.param_name}, manipulate=False)
+        entry_in_local = local_collection.find_one({"path": req.param_name}, manipulate=False)
+
+        if entry_in_local:
+            self._database.local.delete_one({"path": req.param_name})
+
+        if entry_in_defaults:
+            name = entry_in_defaults["path"]
+            val = entry_in_defaults["value"]
+            rospy.set_param(name, val)
+        elif req.delete_rosparam_if_no_default:
+            rospy.delete_param(req.param_name)
+
+        return ResetParamResponse(True)
 
     # Reset all parameters to their default value by wiping all entries in the local database
     def _resetparams_srv_cb(self, req):

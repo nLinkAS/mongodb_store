@@ -42,6 +42,8 @@ add_service_files(
   FILES
   GetParam.srv
   SetParam.srv
+  ResetParam.srv
+  ListParams.srv
   MongoFind.srv
   MongoUpdate.srv
   MongoInsert.srv
