@@ -19,6 +19,7 @@
   <arg name="bind_to_host" default="false" />
 
   <arg name="use_localdatacenter" default="true" />
+  <arg name="warn_if_stored_param_has_no_default" default="false" />
 
   <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER )" user="$(arg user)"/>
 
@@ -34,6 +35,8 @@
     <arg name="repl_set" value="$(arg repl_set)"/>
     <arg name="queue_size" value="$(arg queue_size)" />
     <arg name="bind_to_host" value="$(arg bind_to_host)" />
+    <arg name="use_localdatacenter" value="$(arg use_localdatacenter)" />
+    <arg name="warn_if_stored_param_has_no_default" value="$(arg warn_if_stored_param_has_no_default)" />
   </include>
 
 </launch>
