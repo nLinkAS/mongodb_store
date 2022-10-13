@@ -22,6 +22,7 @@
   <arg name="bind_to_host" default="false" />
 
   <arg name="use_localdatacenter" default="true" />
+  <arg name="warn_if_stored_param_has_no_default" default="false" />
 
   <param name="mongodb_use_daemon" value="$(arg use_daemon)" />
   <param name="mongodb_connection_string" value="$(arg connection_string)" />
@@ -52,11 +53,10 @@
   	</group>
   </group>
 
-  <group if="$(arg launch_config)">
-    <node name="config_manager" pkg="mongodb_store" type="config_manager.py" machine="$(arg machine)">
-      <param name="defaults_path" value="$(arg defaults_path)"/>
-    </node>
-  </group>
+  <node name="config_manager" pkg="mongodb_store" type="config_manager.py" machine="$(arg machine)">
+    <param name="defaults_path" value="$(arg defaults_path)"/>
+    <param name="warn_if_stored_param_has_no_default" value="$(arg warn_if_stored_param_has_no_default)"/>
+  </node>
 
   <node name="message_store" pkg="mongodb_store" type="message_store_node.py" machine="$(arg machine)" > 
 	<param name="mongodb_use_localdatacenter" value="$(arg use_localdatacenter)" />

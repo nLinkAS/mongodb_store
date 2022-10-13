@@ -10,7 +10,7 @@ Two nodes are provided:
 These node depends on MongoDB and the Python client libraries (>=2.3). Install by:
 
 ```
-sudo apt-get install python-pymongo mongodb
+sudo apt-get install python-pymongo mongodb scons
 ```
 If this does not give the required version, you can use:
 
@@ -102,7 +102,7 @@ Setting parameters
 ------------------
 Default parameters are set by placing them in the yaml files in the defaults directory in mongodb_store. This way, default parameters are added to the github repo and shared between all users.
 
-The local parameter overrides can be set in 2 ways:
+The local parameter overrides can be set in 3 ways:
 1) Using the config_manager service:
 ```
 rosservice call /config_manager/set_param "param: '{\"path\":\"/chris\",\"value\":43}'" 
@@ -115,6 +115,29 @@ Note the syntax of the parameter: it is a json representation of a dictionary wi
 rosservice call /config_manager/save_param name_of_the_parameter_to_be_saved
 ```
 Note: This will save the current value of the parameter into the locals database
+
+3) Using the database server directly
+
+
+Resetting parameters
+------------------
+The local parameter overrides can be reset in 2 ways:
+1) Using the config_manager service:
+```
+rosservice call /config_manager/reset_params "{}" 
+```
+This deletes all local config, sets the rosparam to the default value if it exists, otherwise the rosparam is deleted.
+
+2) Using the config_manager services:
+```
+rosservice call /config_manager/list_params "{}"
+```
+and
+```
+rosservice call /config_manager/reset_single_param "param_name: 'name_of_the_parameter_to_be_reset'
+delete_rosparam_if_no_default: false" 
+```
+Note: The list_params-service returns a json representation of a dictionary with keys equal to the param_names in the database. The value of each key is a dictionary with (optional, depending on database content) keys default_value, from_file and local_value. The reset_single_param-service can then be used to reset the desired parameters, delete the locally stored parameter and optionally delete the rosparam.
 
 3) Using the database server directly
 

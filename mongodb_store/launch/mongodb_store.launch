@@ -22,6 +22,7 @@
   <arg name="bind_to_host" default="false" />
 
   <arg name="use_localdatacenter" default="true" />
+  <arg name="warn_if_stored_param_has_no_default" default="false" />
 
   <arg name="launch_config" default="true" />
   <arg name="launch_replicator" default="true" />
@@ -43,6 +44,8 @@
     <arg name="bind_to_host" value="$(arg bind_to_host)" />
     <arg name="launch_config" default="$(arg launch_config)" />
     <arg name="launch_replicator" default="$(arg launch_replicator)" />
+    <arg name="use_localdatacenter" value="$(arg use_localdatacenter)" />
+    <arg name="warn_if_stored_param_has_no_default" value="$(arg warn_if_stored_param_has_no_default)" />
   </include>
 
 </launch>
