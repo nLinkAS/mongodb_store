@@ -226,6 +226,14 @@ class ConfigManager(object):
         self._resetparams_srv = rospy.Service("/config_manager/reset_params",
                                            Trigger,
                                            self._resetparams_srv_cb)
+
+        self._list_params_srv = rospy.Service("/config_manager/list_params",
+                                           ListParams,
+                                           self._listparams_srv_cb)
+
+        self._resetsingleparam_srv = rospy.Service("/config_manager/reset_single_param",
+                                           ResetParam,
+                                           self._resetsingleparam_srv_cb)
         #self._list_params()
 
         # Start the main loop
