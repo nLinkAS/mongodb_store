@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function
+
 import rospy
 from mongodb_store_msgs.msg import StringPairList, StringPair
 import mongodb_store_msgs.srv as dc_srv
@@ -12,7 +12,7 @@ import platform
 if float(platform.python_version()[0:2]) >= 3.0:
     import io
 else:
-    import StringIO
+    import io
 
 if __name__ == '__main__':
     rospy.init_node("example_multi_event_log")

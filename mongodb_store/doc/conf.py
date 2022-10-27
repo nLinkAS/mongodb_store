@@ -65,8 +65,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'mongodb_store'
-copyright = u'2014, Chris Burbridge, Nick Hawes'
+project = 'mongodb_store'
+copyright = '2014, Chris Burbridge, Nick Hawes'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -218,8 +218,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'mongodb_store.tex', u'ros\\_datacentre Documentation',
-   u'Chris Burbridge, Nick Hawes', 'manual'),
+  ('index', 'mongodb_store.tex', 'ros\\_datacentre Documentation',
+   'Chris Burbridge, Nick Hawes', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -248,8 +248,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'mongodb_store', u'mongodb_store Documentation',
-     [u'Chris Burbridge, Nick Hawes'], 1)
+    ('index', 'mongodb_store', 'mongodb_store Documentation',
+     ['Chris Burbridge, Nick Hawes'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -262,8 +262,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'mongodb_store', u'mongodb_store Documentation',
-   u'Chris Burbridge, Nick Hawes', 'mongodb_store', 'One line description of project.',
+  ('index', 'mongodb_store', 'mongodb_store Documentation',
+   'Chris Burbridge, Nick Hawes', 'mongodb_store', 'One line description of project.',
    'Miscellaneous'),
 ]
 

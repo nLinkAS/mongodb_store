@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+
 """
 Provides a service to store ROS message objects in a mongodb database in JSON.
 """
@@ -9,7 +9,7 @@ import rospy
 import actionlib
 import pymongo
 try:
-    from Queue import Queue
+    from queue import Queue
 except ImportError:
     from queue import Queue
 import os
@@ -139,7 +139,7 @@ class MongoProcess(Process):
     def on_output(self, msg):
         super(MongoProcess, self).on_output(msg)
         try:
-            progress = filter(self._regex.match, msg.split())
+            progress = list(filter(self._regex.match, msg.split()))
             current, total = progress[0].split('/')
             self._progress = float(current) / float(total) * 100.0
         except:

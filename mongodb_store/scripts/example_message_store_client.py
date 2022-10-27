@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+
 import rospy
 import mongodb_store_msgs.srv as dc_srv
 import mongodb_store.util as dc_util
@@ -10,7 +10,7 @@ import platform
 if float(platform.python_version()[0:2]) >= 3.0:
     import io
 else:
-    import StringIO
+    import io
 
 
 if __name__ == '__main__':

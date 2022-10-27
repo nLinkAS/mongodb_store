@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
+
 from future.utils import iteritems
 
 import roslib; roslib.load_manifest('mongodb_store')
@@ -15,7 +15,7 @@ if float(platform.python_version()[0:2]) >= 3.0:
     xmlrpclib = xmlrpc.client
     _PY3 = True
 else:
-    import xmlrpclib
+    import xmlrpc.client
     _PY3 = False
 
 from bson.binary import Binary
@@ -46,28 +46,27 @@ class MongoTransformer(pymongo.son_manipulator.SONManipulator):
         if isinstance(son, list):
             return self.transform_incoming_list(son, collection)
         elif isinstance(son, dict):
-           for (key, value) in son.items():
+           for (key, value) in list(son.items()):
                 son[key] = self.transform_incoming(value, collection)
-        elif isinstance(son, xmlrpclib.Binary):
+        elif isinstance(son, xmlrpc.client.Binary):
             return {'__xmlrpclib_object': 'xmlrpclib.Binary',
                    'data': Binary(son.data)}
         return son
 
     def transform_incoming_list(self, lst, collection):
-        new_lst = map(lambda x: self.transform_incoming(x, collection),
-                  lst)
+        new_lst = [self.transform_incoming(x, collection) for x in lst]
         return new_lst
 
     def transform_outgoing(self, son, collection):
         if isinstance(son, list):
             return self.transform_outgoing_list(son, collection)
         elif isinstance(son, dict):
-            for (key, value) in son.items():
+            for (key, value) in list(son.items()):
                 son[key] = self.transform_outgoing(value, collection)
 
             if "__xmlrpclib_object" in son:
                 if son["__xmlrpclib_object"] == "xmlrpclib.Binary":
-                    b = xmlrpclib.Binary(son['data'])
+                    b = xmlrpc.client.Binary(son['data'])
                     return b
                 else:
                     raise Exception("Unhandled xmlrpclib type.")
@@ -76,8 +75,7 @@ class MongoTransformer(pymongo.son_manipulator.SONManipulator):
         return son
 
     def transform_outgoing_list(self, lst, collection):
-        new_lst = map(lambda x: self.transform_outgoing(x, collection),
-                  lst)
+        new_lst = [self.transform_outgoing(x, collection) for x in lst]
         return new_lst
 
 class ConfigManager(object):
@@ -279,7 +277,7 @@ class ConfigManager(object):
                 rospy.logerr("Trying to set parameter but not giving full spec")
                 return SetParamResponse(False)
         else:
-            if not (new.has_key("path") and new.has_key("value")):
+            if not ("path" in new and "value" in new):
                 rospy.logerr("Trying to set parameter but not giving full spec")
                 return SetParamResponse(False)
 
@@ -333,7 +331,7 @@ class ConfigManager(object):
             params[param["path"]]["from_file"] = param["from_file"]
 
         for param in local_collection.find():
-            if not params.has_key(param["path"]):
+            if param["path"] not in params:
                 params[param["path"]] = {}
             params[param["path"]]["local_value"] = param["value"]
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+
 
 import rospy
 import mongodb_store.util as mg_util
@@ -19,7 +19,7 @@ import platform
 if float(platform.python_version()[0:2]) >= 3.0:
     import queue as Queue
 else:
-    import Queue
+    import queue
 
 
 MongoClient = mg_util.import_MongoClient()
@@ -100,7 +100,7 @@ class TopicPlayer(PlayerProcess):
 
         # how many to
         buffer_size = 50
-        self.to_publish = Queue.Queue(maxsize=buffer_size)
+        self.to_publish = queue.Queue(maxsize=buffer_size)
         self.queue_thread = threading.Thread(target=self.queue_from_db, args=[running])
         self.queue_thread.start()
 
@@ -175,7 +175,7 @@ class TopicPlayer(PlayerProcess):
                 # rospy.loginfo('diff %f' % (publish_time - rospy.get_rostime()).to_sec())
                 self.publisher.publish(msg)
 
-            except Queue.Empty as e:
+            except queue.Empty as e:
                 pass
 
 
@@ -294,13 +294,13 @@ class MongoPlayback(object):
 
         if len(start_dt)==0:
             # get the min and max time across all collections, conver to ros time
-            start_time = to_ros_time(min(map(min_time, [collection for collection in collections if collection.count() > 0])))
+            start_time = to_ros_time(min(list(map(min_time, [collection for collection in collections if collection.count() > 0]))))
         else:
             start_time = to_ros_time(mkdatetime(start_dt))
 
 
         if len(end_dt)==0:
-            end_time =  to_ros_time(max(map(max_time, [collection for collection in collections if collection.count() > 0])))
+            end_time =  to_ros_time(max(list(map(max_time, [collection for collection in collections if collection.count() > 0]))))
         else:
             end_time = to_ros_time(mkdatetime(end_dt))
 
@@ -319,7 +319,7 @@ class MongoPlayback(object):
         self.clock_player = ClockPlayer(self.event, start_time, end_time, pre_roll, post_roll)
 
         # create playback objects
-        self.players = map(lambda c: TopicPlayer(self.mongodb_host, self.mongodb_port, database_name, c, self.event, start_time - pre_roll, end_time + post_roll), topics)
+        self.players = [TopicPlayer(self.mongodb_host, self.mongodb_port, database_name, c, self.event, start_time - pre_roll, end_time + post_roll) for c in topics]
 
 
     def start(self):

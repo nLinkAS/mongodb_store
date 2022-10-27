@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
+
 from future.utils import iteritems
 """
 Provides a service to store ROS message objects in a mongodb database in JSON.

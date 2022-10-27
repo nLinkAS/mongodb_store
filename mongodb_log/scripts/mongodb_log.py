@@ -22,7 +22,7 @@
 #  Read the full text in the LICENSE.GPL file in the doc directory.
 
 # make sure we aren't using floor division
-from __future__ import division, with_statement
+
 
 PACKAGE_NAME='mongodb_log'
 NODE_NAME='mongodb_log'
@@ -49,7 +49,7 @@ from threading import Thread, Timer
 try: 
     from queue import Empty
 except ImportError:
-    from Queue import Empty
+    from queue import Empty
 from optparse import OptionParser
 from tempfile import mktemp
 from datetime import datetime, timedelta
@@ -406,7 +406,7 @@ class MongoWriter(object):
         published_topics = [t[0] for t in rospy.get_published_topics()]
         for pattern in topics:
             exp = re.compile(pattern)
-            expanded_topics += filter(lambda t: exp.match(t) is not None, published_topics)
+            expanded_topics += [t for t in published_topics if exp.match(t) is not None]
         return expanded_topics
 
     def subscribe_topics(self, topics):

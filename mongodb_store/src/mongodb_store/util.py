@@ -1,4 +1,4 @@
-from __future__ import print_function, absolute_import
+
 import rospy
 import genpy
 from std_srvs.srv import Empty
@@ -13,7 +13,7 @@ if float(platform.python_version()[0:2]) >= 3.0:
     from io import BytesIO as Buffer
 else:
     _PY3 = False
-    from StringIO import StringIO as Buffer
+    from io import StringIO as Buffer
 from mongodb_store_msgs.msg import SerialisedMessage
 from mongodb_store_msgs.srv import MongoQueryMsgRequest
 
@@ -202,7 +202,7 @@ def sanitize_value(attr, v, type):
             # ensure unicode
             try:
                 if not _PY3:    # All strings are unicode in Python 3
-                    v = unicode(v, "utf-8")
+                    v = str(v, "utf-8")
             except UnicodeDecodeError as e:
                 # at this point we can deal with the encoding, so treat it as binary
                 v = Binary(v)
@@ -312,7 +312,7 @@ def fill_message(message, document):
                                getattr(message,"_slot_types",[""]*len(message.__slots__))):
 
         # This check is required since objects returned with projection queries can have absent keys
-        if slot in document.keys():
+        if slot in list(document.keys()):
             value = document[slot]
         # fill internal structures if value is a dictionary itself
             if isinstance(value, dict):
@@ -329,7 +329,7 @@ def fill_message(message, document):
                     lst.append(msg)
                     setattr(message, slot, lst)
             else:
-                if not _PY3 and isinstance(value, unicode):     # All strings are unicode in Python 3
+                if not _PY3 and isinstance(value, str):     # All strings are unicode in Python 3
                     setattr(message, slot, value.encode('utf-8'))
                 else:
                     setattr(message, slot, value)

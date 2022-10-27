@@ -71,8 +71,8 @@ class TestMessageStoreProxy(unittest.TestCase):
             self.assertEqual(int(doc[0].orientation.z), 0)
 
         # must remove the item or unittest only really valid once
-        print(meta["_id"])
-        print(str(meta["_id"]))
+        print((meta["_id"]))
+        print((str(meta["_id"])))
         deleted = msg_store.delete(str(meta["_id"]))
         self.assertTrue(deleted)
 
