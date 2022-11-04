@@ -261,8 +261,8 @@ include_directories("/usr/include")
 
 
 # Needed for the new C driver
-include_directories("/usr/local/include/libmongoc-1.0")
-include_directories("/usr/local/include/libbson-1.0")
+include_directories("/usr/include/libmongoc-1.0")
+include_directories("/usr/include/libbson-1.0")
 
 
 #
