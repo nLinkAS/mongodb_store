@@ -5,7 +5,8 @@
 
 
 //include to get BSON. There's probably a much smaller of set of headers we could get away with
-#include "mongo/client/dbclient.h"
+// #include "mongo/client/dbclient.h"
+#include "mongoDriver/BSONObjBuilder.h"
 
 
 /*
@@ -35,12 +36,12 @@ and type:
 namespace mongodb_store {
 
 template<typename MsgType> 
-void add_meta_for_msg(const typename MsgType::ConstPtr & _msg,  mongo::BSONObjBuilder & _builder) {
+void add_meta_for_msg(const typename MsgType::ConstPtr & _msg,  orion::BSONObjBuilder & _builder) {
 
-  	mongo::BSONObjBuilder meta;
+  	orion::BSONObjBuilder meta;
 
   	ros::Time now = ros::Time::now();  	
-  	mongo::Date_t nowDate((now.sec * 1000.0) + (now.nsec / 1000000.0));	
+  	orion::BSONDate nowDate((now.sec * 1000.0) + (now.nsec / 1000000.0));	
 	meta.append("inserted_at", nowDate);
 
   	std::string type(ros::message_traits::DataType<MsgType>::value());

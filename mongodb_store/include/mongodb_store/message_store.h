@@ -14,7 +14,9 @@
 #include "mongodb_store_msgs/Insert.h"
 
 //include to get BSON. There's probably a much smaller of set of headers we could get away with
-#include "mongo/client/dbclient.h"
+// #include "mongo/client/dbclient.h"
+#include "mongoDriver/BSONObjBuilder.h"
+// #include "mongodb_orion_lib/src/lib/mongoDriver/BSONObjBuilder.h"
 
 #include  <boost/make_shared.hpp>
 #include <assert.h>
@@ -133,17 +135,17 @@ public:
 
 
 	template<typename MsgType>
-	std::string insert(const MsgType & _msg, const mongo::BSONObj & _meta = mongo::BSONObj(), const bool _wait = true) {
+	std::string insert(const MsgType & _msg, const orion::BSONObj & _meta = orion::BSONObj(), const bool _wait = true) {
 		return insert(_msg, m_database, m_collection, _meta, _wait);
 	}
 
 
 	template<typename MsgType>
 	std::string insertNamed(const std::string & _name, const MsgType & _msg,
-		const mongo::BSONObj & _meta = mongo::BSONObj(), const bool _wait = true) {
+		const orion::BSONObj & _meta = orion::BSONObj(), const bool _wait = true) {
 
 		//create a copy of the meta data with the name included
-		mongo::BSONObjBuilder builder;
+		orion::BSONObjBuilder builder;
 		builder.appendElements(_meta);
 		builder.append("name", _name);
 
@@ -155,7 +157,7 @@ public:
 	std::string insert(const MsgType & _msg,
 		const std::string & _database,
 		const std::string & _collection,
-		const mongo::BSONObj & _meta = mongo::BSONObj(),
+		const orion::BSONObj & _meta = orion::BSONObj(),
 		const bool _wait=true) {
 
     if (_wait) {
@@ -194,15 +196,15 @@ public:
                         int _limit = 0) {
 
 
-		mongo::BSONObj meta_query = BSON( "name" << _name );
+		orion::BSONObj meta_query = BSON( "name" << _name );
 		return query<MsgType>(_messages, EMPTY_BSON_OBJ, meta_query, EMPTY_BSON_OBJ,  _find_one, _limit);
 	}
 
 	template<typename MsgType>
-          std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> queryNamed(const std::string & _name, bool _find_one = true, int _limit = 0) {
+          std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> queryNamed(const std::string & _name, bool _find_one = true, int _limit = 0) {
 
-		std::vector< std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> > msg_and_metas;
-		mongo::BSONObj meta_query = BSON( "name" << _name );
+		std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> > msg_and_metas;
+		orion::BSONObj meta_query = BSON( "name" << _name );
 		bool result = query(msg_and_metas, EMPTY_BSON_OBJ, meta_query,EMPTY_BSON_OBJ,  _find_one, true, _limit);
 
 		if(result) {
@@ -220,16 +222,16 @@ public:
 	bool queryID(const std::string & _id,
 					std::vector< boost::shared_ptr<MsgType> > & _messages) {
 
-		mongo::BSONObj msg_query = BSON( "_id" << mongo::OID(_id) );
+		orion::BSONObj msg_query = BSON( "_id" << orion::OID(_id) );
 		return query<MsgType>(_messages, msg_query, EMPTY_BSON_OBJ, EMPTY_BSON_OBJ,  true);
 	}
 
 
 	template<typename MsgType>
-	std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> queryID(const std::string & _id) {
-		mongo::BSONObj msg_query = BSON( "_id" << mongo::OID(_id) );
+	std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> queryID(const std::string & _id) {
+		orion::BSONObj msg_query = BSON( "_id" << orion::OID(_id) );
 
-		std::vector< std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> > msg_and_metas;
+		std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> > msg_and_metas;
 		bool result = query(msg_and_metas, msg_query, EMPTY_BSON_OBJ, EMPTY_BSON_OBJ,  true, true);
 
 		if(result) {
@@ -241,10 +243,10 @@ public:
 	}
 
 	template<typename MsgType>
-	bool query(std::vector< std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> > & _messages,
-				const mongo::BSONObj & _message_query = mongo::BSONObj(),
-				const mongo::BSONObj & _meta_query = mongo::BSONObj(),
-        const mongo::BSONObj & _sort_query = mongo::BSONObj(),
+	bool query(std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> > & _messages,
+				const orion::BSONObj & _message_query = orion::BSONObj(),
+				const orion::BSONObj & _meta_query = orion::BSONObj(),
+        const orion::BSONObj & _sort_query = orion::BSONObj(),
 				bool _find_one = false,
         bool _decode_metas = true,
         int _limit = 0)
@@ -258,7 +260,7 @@ public:
 					 msg.request.type = get_ros_type<MsgType>();
 					 msg.request.single = _find_one;
 						msg.request.limit = _limit;
-											/*mongo::BSONObjBuilder objb;
+											/*orion::BSONObjBuilder objb;
 											objb.append("_id",-1);*/
 
 
@@ -314,11 +316,11 @@ public:
 
 
 	template<typename MsgType>
-	bool queryWithProjection(std::vector< std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> > & _messages,
-				const mongo::BSONObj & _message_query = mongo::BSONObj(),
-				const mongo::BSONObj & _meta_query = mongo::BSONObj(),
-        const mongo::BSONObj & _sort_query = mongo::BSONObj(),
-				const mongo::BSONObj & _projection_query = mongo::BSONObj(),
+	bool queryWithProjection(std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> > & _messages,
+				const orion::BSONObj & _message_query = orion::BSONObj(),
+				const orion::BSONObj & _meta_query = orion::BSONObj(),
+        const orion::BSONObj & _sort_query = orion::BSONObj(),
+				const orion::BSONObj & _projection_query = orion::BSONObj(),
 				bool _find_one = false,
                                 bool _decode_metas = true,
                                 int _limit = 0)
@@ -332,7 +334,7 @@ public:
   		msg.request.type = get_ros_type<MsgType>();
   		msg.request.single = _find_one;
       msg.request.limit = _limit;
-                /*mongo::BSONObjBuilder objb;
+                /*orion::BSONObjBuilder objb;
                 objb.append("_id",-1);*/
 
 
@@ -386,19 +388,19 @@ public:
 	}
 	template<typename MsgType>
 	bool queryWithProjection(std::vector< boost::shared_ptr<MsgType> > & _messages,
-				const mongo::BSONObj & _message_query = mongo::BSONObj(),
-				const mongo::BSONObj & _meta_query = mongo::BSONObj(),
-				const mongo::BSONObj & _sort_query = mongo::BSONObj(),
-				const mongo::BSONObj & _projection_query = mongo::BSONObj(),
+				const orion::BSONObj & _message_query = orion::BSONObj(),
+				const orion::BSONObj & _meta_query = orion::BSONObj(),
+				const orion::BSONObj & _sort_query = orion::BSONObj(),
+				const orion::BSONObj & _projection_query = orion::BSONObj(),
 																bool _find_one = false,
 																int _limit = 0)
 	{
 
 		// call other query method, but ignore metas
-		std::vector< std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> > msg_and_metas;
+		std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> > msg_and_metas;
 		bool result = queryWithProjection(msg_and_metas, _message_query, _meta_query,_sort_query, _projection_query,_find_one, false, _limit);
 
-		for (typename std::vector< std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> >::iterator i = msg_and_metas.begin(); i != msg_and_metas.end(); ++i)
+		for (typename std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> >::iterator i = msg_and_metas.begin(); i != msg_and_metas.end(); ++i)
 		{
 			_messages.push_back(i->first);
 		}
@@ -411,17 +413,17 @@ public:
 
 	template<typename MsgType>
 	bool query(std::vector< boost::shared_ptr<MsgType> > & _messages,
-				const mongo::BSONObj & _message_query = mongo::BSONObj(),
-				const mongo::BSONObj & _meta_query = mongo::BSONObj(),
-        const mongo::BSONObj & _sort_query = mongo::BSONObj(),
+				const orion::BSONObj & _message_query = orion::BSONObj(),
+				const orion::BSONObj & _meta_query = orion::BSONObj(),
+        const orion::BSONObj & _sort_query = orion::BSONObj(),
                                 bool _find_one = false,
                                 int _limit = 0) {
 
 		// call other query method, but ignore metas
-		std::vector< std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> > msg_and_metas;
+		std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> > msg_and_metas;
     bool result = query(msg_and_metas, _message_query, _meta_query,_sort_query, _find_one, false, _limit);
 
-		for (typename std::vector< std::pair<boost::shared_ptr<MsgType>, mongo::BSONObj> >::iterator i = msg_and_metas.begin(); i != msg_and_metas.end(); ++i)
+		for (typename std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> >::iterator i = msg_and_metas.begin(); i != msg_and_metas.end(); ++i)
 		{
 			_messages.push_back(i->first);
 		}
@@ -438,9 +440,9 @@ public:
 	template<typename MsgType>
 	bool updateID(const std::string & _id,
 					const MsgType & _msg,
-					const mongo::BSONObj & _meta = mongo::BSONObj()) {
+					const orion::BSONObj & _meta = orion::BSONObj()) {
 
-		mongo::BSONObj msg_query = BSON( "_id" << mongo::OID(_id) );
+		orion::BSONObj msg_query = BSON( "_id" << orion::OID(_id) );
 		return update<MsgType>(_msg, _meta, msg_query, EMPTY_BSON_OBJ, false);
 	}
 
@@ -451,12 +453,12 @@ public:
 	bool updateNamed(const std::string & _name,
 					const MsgType & _msg,
 					bool _upsert = false,
-					const mongo::BSONObj & _meta = mongo::BSONObj()) {
+					const orion::BSONObj & _meta = orion::BSONObj()) {
 
-		mongo::BSONObj meta_query = BSON( "name" << _name );
+		orion::BSONObj meta_query = BSON( "name" << _name );
 
 		// make sure the name goes into the meta info after update
-		mongo::BSONObjBuilder builder;
+		orion::BSONObjBuilder builder;
 		builder.appendElements(_meta);
 		builder.append("name", _name);
 
@@ -465,9 +467,9 @@ public:
 
 	template<typename MsgType>
 	bool update(const MsgType & _msg,
-				const mongo::BSONObj & _meta = mongo::BSONObj(),
-				const mongo::BSONObj & _message_query = mongo::BSONObj(),
-				const mongo::BSONObj & _meta_query = mongo::BSONObj(),
+				const orion::BSONObj & _meta = orion::BSONObj(),
+				const orion::BSONObj & _message_query = orion::BSONObj(),
+				const orion::BSONObj & _meta_query = orion::BSONObj(),
 				bool _upsert = false) {
 
 		//Create message with basic fields
@@ -533,7 +535,7 @@ protected:
   ros::Publisher m_insertPub;
 
 	//an empty bson doc to save recreating one whenever one is not required
-    static const mongo::BSONObj EMPTY_BSON_OBJ;
+    static const orion::BSONObj EMPTY_BSON_OBJ;
 };
 
 }

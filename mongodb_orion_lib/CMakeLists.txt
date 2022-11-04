@@ -26,6 +26,11 @@ PROJECT(mongodb_orion_lib)
 # find_package() for mongo driver doesn't work with cmake 2
 cmake_minimum_required(VERSION 3.0)
 
+catkin_package(
+    INCLUDE_DIRS src/lib
+    LIBRARIES mongoDriver
+)
+
 #
 # DEBUG or RELEASE build ?
 #
@@ -320,3 +325,8 @@ if (error EQUAL 0)
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)
+
+# Mark cpp header files for installation
+install(DIRECTORY src/lib/mongoDriver/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
