@@ -20,6 +20,9 @@ develop-eggs
 lib
 lib64
 
+# don't ignore orion lib
+!mongodb_orion_lib/src/lib
+
 # Installer logs
 pip-log.txt
 
