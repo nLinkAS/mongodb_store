@@ -25,7 +25,7 @@ endif()
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED rospy roslib rosgraph rostopic tf sensor_msgs mongodb_store)
+find_package(catkin REQUIRED rospy roslib rosgraph rostopic tf sensor_msgs mongodb_store mongodb_orion_lib)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system thread filesystem)
@@ -84,6 +84,10 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
+# Needed for the new C driver
+include_directories("/usr/include/libmongoc-1.0")
+include_directories("/usr/include/libbson-1.0")
+
 ## Declare a cpp library
 # add_library(mongodb_log
 #   src/${PROJECT_NAME}/mongodb_log.cpp
@@ -91,8 +95,8 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 #link_libraries(mongoclient)
 add_executable(mongodb_log_tf src/mongodb_log_tf.cpp)
-add_executable(mongodb_log_pcl src/mongodb_log_pcl.cpp)
-add_executable(mongodb_log_cimg src/mongodb_log_cimg.cpp)
+#add_executable(mongodb_log_pcl src/mongodb_log_pcl.cpp)
+#add_executable(mongodb_log_cimg src/mongodb_log_cimg.cpp)
 
 # rosbuild_add_executable(rosmongodb_log_trimesh src/rosmongodb_log_trimesh.cpp)
 target_link_libraries(mongodb_log_tf
@@ -100,16 +104,16 @@ target_link_libraries(mongodb_log_tf
   ${OPENSSL_LIBRARIES}
   ${Boost_LIBRARIES}
 )
-target_link_libraries(mongodb_log_pcl
-  ${catkin_LIBRARIES}   
-  ${OPENSSL_LIBRARIES}
-  ${Boost_LIBRARIES}
-)
-target_link_libraries(mongodb_log_cimg
-  ${catkin_LIBRARIES}   
-  ${OPENSSL_LIBRARIES}
-  ${Boost_LIBRARIES}
-)
+#target_link_libraries(mongodb_log_pcl
+#  ${catkin_LIBRARIES}   
+#  ${OPENSSL_LIBRARIES}
+#  ${Boost_LIBRARIES}
+#)
+#target_link_libraries(mongodb_log_cimg
+#  ${catkin_LIBRARIES}   
+#  ${OPENSSL_LIBRARIES}
+#  ${Boost_LIBRARIES}
+#)
 
 #rosbuild_link_boost(mongodb_log_cimg system)
 #rosbuild_link_boost(mongodb_log_pcl system)
@@ -145,7 +149,7 @@ catkin_install_python(PROGRAMS
 
 
 ## Mark executables and/or libraries for installation
-install(TARGETS mongodb_log_tf mongodb_log_cimg mongodb_log_pcl
+install(TARGETS mongodb_log_tf #mongodb_log_cimg mongodb_log_pcl
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

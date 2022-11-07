@@ -2,7 +2,7 @@
 
 namespace mongodb_store {
 
-	const mongo::BSONObj MessageStoreProxy::EMPTY_BSON_OBJ =  mongo::BSONObj();
+	const orion::BSONObj MessageStoreProxy::EMPTY_BSON_OBJ =  orion::BSONObj();
 
 	mongodb_store_msgs::StringPair makePair(const std::string & _first, const std::string & _second) {
 	    mongodb_store_msgs::StringPair pair;

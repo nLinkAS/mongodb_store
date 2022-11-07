@@ -16,6 +16,7 @@
 //include to get BSON. There's probably a much smaller of set of headers we could get away with
 // #include "mongo/client/dbclient.h"
 #include "mongoDriver/BSONObjBuilder.h"
+#include "mongoDriver/BSONArrayBuilder.h"
 // #include "mongodb_orion_lib/src/lib/mongoDriver/BSONObjBuilder.h"
 
 #include  <boost/make_shared.hpp>
@@ -79,6 +80,54 @@ const std::string get_ros_type() {
 template<typename MsgType>
 const std::string get_ros_type(const MsgType & _msg) {
 	return get_ros_type<MsgType>();
+}
+
+// orion::BSONObj fromjson(const char* jsonString, int* len = NULL) {
+//     // MONGO_JSON_DEBUG("jsonString: " << jsonString);
+//     if (jsonString[0] == '\0') {
+//         if (len)
+//             *len = 0;
+//         return BSONObj();
+//     }
+// 	bson_error_t* _bson_error;
+// 	ssize_t _len = -1; // determine 
+// 	if (len) {
+// 		_len
+// 	}
+//     JParse jparse(jsonString);
+//     BSONObjBuilder builder;
+//     Status ret = Status::OK();
+//     try {
+//         ret = jparse.parse(builder);
+//     } catch (std::exception& e) {
+//         std::ostringstream message;
+//         message << "caught exception from within JSON parser: " << e.what();
+//         throw MsgAssertionException(17031, message.str());
+//     }
+
+//     if (ret != Status::OK()) {
+//         ostringstream message;
+//         message << "code " << ret.code() << ": " << ret.codeString() << ": " << ret.reason();
+//         throw MsgAssertionException(16619, message.str());
+//     }
+//     if (len)
+//         *len = jparse.offset();
+//     return builder.obj();
+// }
+
+// orion::BSONObj fromjson(const std::string& str) {
+//     return fromjson(str.c_str());
+// }
+
+orion::BSONObj fromjson(const std::string& str) {
+	ssize_t _len = str.length();
+	if (_len == 0) {
+		return orion::BSONObj();
+	}
+	bson_error_t* _bson_error;
+	bson_t* _bson_out = bson_new_from_json(reinterpret_cast<const uint8_t*>(str.c_str()), _len, _bson_error);
+	//TODO: Handle error
+    return orion::BSONObj(_bson_out);
 }
 
 mongodb_store_msgs::StringPair makePair(const std::string & _first, const std::string & _second);
@@ -169,7 +218,7 @@ public:
 
       //if there's no meta then no copying is necessary
   		if(!_meta.isEmpty()) {
-        srv.request.meta.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta.jsonString()));
+        srv.request.meta.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta.toString()));
       }
 
       fill_serialised_message(srv.request.message, _msg);
@@ -182,7 +231,7 @@ public:
       msg.database = _database;
       msg.collection = _collection;
       if (!_meta.isEmpty())
-        msg.meta.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta.jsonString()));
+        msg.meta.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta.toString()));
       fill_serialised_message(msg.message, _msg);
       m_insertPub.publish(msg);
       return "";
@@ -196,7 +245,9 @@ public:
                         int _limit = 0) {
 
 
-		orion::BSONObj meta_query = BSON( "name" << _name );
+		orion::BSONObjBuilder bob;
+    	bob.append("name", _name);
+		orion::BSONObj meta_query = bob.obj();
 		return query<MsgType>(_messages, EMPTY_BSON_OBJ, meta_query, EMPTY_BSON_OBJ,  _find_one, _limit);
 	}
 
@@ -204,7 +255,9 @@ public:
           std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> queryNamed(const std::string & _name, bool _find_one = true, int _limit = 0) {
 
 		std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> > msg_and_metas;
-		orion::BSONObj meta_query = BSON( "name" << _name );
+		orion::BSONObjBuilder bob;
+    	bob.append("name", _name);
+		orion::BSONObj meta_query = bob.obj();
 		bool result = query(msg_and_metas, EMPTY_BSON_OBJ, meta_query,EMPTY_BSON_OBJ,  _find_one, true, _limit);
 
 		if(result) {
@@ -222,14 +275,18 @@ public:
 	bool queryID(const std::string & _id,
 					std::vector< boost::shared_ptr<MsgType> > & _messages) {
 
-		orion::BSONObj msg_query = BSON( "_id" << orion::OID(_id) );
+		orion::BSONObjBuilder bob;
+    	bob.append("_id", orion::OID(_id));
+		orion::BSONObj msg_query = bob.obj();
 		return query<MsgType>(_messages, msg_query, EMPTY_BSON_OBJ, EMPTY_BSON_OBJ,  true);
 	}
 
 
 	template<typename MsgType>
 	std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> queryID(const std::string & _id) {
-		orion::BSONObj msg_query = BSON( "_id" << orion::OID(_id) );
+		orion::BSONObjBuilder bob;
+    	bob.append("_id", orion::OID(_id));
+		orion::BSONObj msg_query = bob.obj();
 
 		std::vector< std::pair<boost::shared_ptr<MsgType>, orion::BSONObj> > msg_and_metas;
 		bool result = query(msg_and_metas, msg_query, EMPTY_BSON_OBJ, EMPTY_BSON_OBJ,  true, true);
@@ -266,16 +323,16 @@ public:
 
 				 //if there's no message then no copying is necessary
 					 if(!_message_query.isEmpty()) {
-						 msg.request.message_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _message_query.jsonString()));
+						 msg.request.message_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _message_query.toString()));
 				 }
 
 				 //if there's no meta then no copying is necessary
 				 if(!_meta_query.isEmpty()) {
-						 msg.request.meta_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta_query.jsonString()));
+						 msg.request.meta_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta_query.toString()));
 				 }
 											//if there's no sort message then no copying is necessary
 											if(!_sort_query.isEmpty()) {
-															 msg.request.sort_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _sort_query.jsonString()));
+															 msg.request.sort_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _sort_query.toString()));
 											}
 											//if there's no projection message then no copying is necessary
 
@@ -289,7 +346,7 @@ public:
 							 for(size_t i = 0; i < msg.response.messages.size(); i ++) {
 
 								 if(_decode_metas && msg.response.metas[i].pairs[0].first == mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY) {
-									 _messages.push_back(std::make_pair(deserialise_message<MsgType>(msg.response.messages[i]), mongo::fromjson(msg.response.metas[i].pairs[0].second)));
+									 _messages.push_back(std::make_pair(deserialise_message<MsgType>(msg.response.messages[i]), fromjson(msg.response.metas[i].pairs[0].second)));
 							 }
 							 else {
 								 if(_decode_metas) {
@@ -340,20 +397,20 @@ public:
 
 		//if there's no message then no copying is necessary
   		if(!_message_query.isEmpty()) {
- 			msg.request.message_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQuerywithProjectionMsgRequest::JSON_QUERY, _message_query.jsonString()));
+ 			msg.request.message_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQuerywithProjectionMsgRequest::JSON_QUERY, _message_query.toString()));
 		}
 
 		//if there's no meta then no copying is necessary
 		if(!_meta_query.isEmpty()) {
- 			msg.request.meta_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQuerywithProjectionMsgRequest::JSON_QUERY, _meta_query.jsonString()));
+ 			msg.request.meta_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQuerywithProjectionMsgRequest::JSON_QUERY, _meta_query.toString()));
 		}
                 //if there's no sort message then no copying is necessary
                 if(!_sort_query.isEmpty()) {
-                         msg.request.sort_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQuerywithProjectionMsgRequest::JSON_QUERY, _sort_query.jsonString()));
+                         msg.request.sort_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQuerywithProjectionMsgRequest::JSON_QUERY, _sort_query.toString()));
                 }
                 //if there's no projection message then no copying is necessary
                 if(!_projection_query.isEmpty()) {
-                         msg.request.projection_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQuerywithProjectionMsgRequest::JSON_QUERY, _projection_query.jsonString()));
+                         msg.request.projection_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQuerywithProjectionMsgRequest::JSON_QUERY, _projection_query.toString()));
                 }
 
   		if(m_querywithProjectionClient.call(msg))
@@ -366,7 +423,7 @@ public:
 	  			for(size_t i = 0; i < msg.response.messages.size(); i ++) {
 
 	  				if(_decode_metas && msg.response.metas[i].pairs[0].first == mongodb_store_msgs::MongoQuerywithProjectionMsgRequest::JSON_QUERY) {
-	  					_messages.push_back(std::make_pair(deserialise_message<MsgType>(msg.response.messages[i]), mongo::fromjson(msg.response.metas[i].pairs[0].second)));
+	  					_messages.push_back(std::make_pair(deserialise_message<MsgType>(msg.response.messages[i]), fromjson(msg.response.metas[i].pairs[0].second)));
 					}
 					else {
 						if(_decode_metas) {
@@ -442,7 +499,9 @@ public:
 					const MsgType & _msg,
 					const orion::BSONObj & _meta = orion::BSONObj()) {
 
-		orion::BSONObj msg_query = BSON( "_id" << orion::OID(_id) );
+		orion::BSONObjBuilder bob;
+    	bob.append("_id", orion::OID(_id));
+		orion::BSONObj msg_query = bob.obj();
 		return update<MsgType>(_msg, _meta, msg_query, EMPTY_BSON_OBJ, false);
 	}
 
@@ -455,7 +514,9 @@ public:
 					bool _upsert = false,
 					const orion::BSONObj & _meta = orion::BSONObj()) {
 
-		orion::BSONObj meta_query = BSON( "name" << _name );
+		orion::BSONObjBuilder bob;
+    	bob.append("name", _name);
+		orion::BSONObj meta_query = bob.obj();
 
 		// make sure the name goes into the meta info after update
 		orion::BSONObjBuilder builder;
@@ -480,17 +541,17 @@ public:
 
 		//if there's no message then no copying is necessary
   		if(!_message_query.isEmpty()) {
- 			msg.request.message_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _message_query.jsonString()));
+ 			msg.request.message_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _message_query.toString()));
 		}
 
 		//if there's no meta then no copying is necessary
 		if(!_meta_query.isEmpty()) {
- 			msg.request.meta_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta_query.jsonString()));
+ 			msg.request.meta_query.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta_query.toString()));
 		}
 
 			//if there's no meta then no copying is necessary
   		if(!_meta.isEmpty()) {
- 			msg.request.meta.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta.jsonString()));
+ 			msg.request.meta.pairs.push_back(makePair(mongodb_store_msgs::MongoQueryMsgRequest::JSON_QUERY, _meta.toString()));
 		}
 
 		fill_serialised_message(msg.request.message, _msg);

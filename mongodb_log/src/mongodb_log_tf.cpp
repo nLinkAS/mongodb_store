@@ -32,11 +32,12 @@
 #include <tf/LinearMath/Quaternion.h>
 
 // MongoDB
-#include <mongo/client/dbclient.h>
+// #include <mongo/client/dbclient.h>
+#include "mongoDriver/connectionOperations.h"
 #include <mongodb_store/util.h>
 
 
-using namespace mongo;
+// using namespace mongo;
 using namespace std;
 
 
@@ -50,7 +51,7 @@ float fTimeDistanceThreshold;
 list<PoseStampedMemoryEntry> lstPoseStampedMemory;
 bool bAlwaysLog;
 
-DBClientConnection *mongodb_conn;
+std::string mongodb;
 std::string collection;
 std::string topic;
 
@@ -131,7 +132,7 @@ bool shouldLogTransform(std::vector<geometry_msgs::TransformStamped>::const_iter
 }
 
 void msg_callback(const tf::tfMessage::ConstPtr& msg) {
-  std::vector<BSONObj> transforms;
+  std::vector<orion::BSONObj> transforms;
   
   const tf::tfMessage& msg_in = *msg;
   bool bDidLogTransforms = false;
@@ -141,30 +142,35 @@ void msg_callback(const tf::tfMessage::ConstPtr& msg) {
     if(shouldLogTransform(t)) {
       bDidLogTransforms = true;
       
-      Date_t stamp = t->header.stamp.sec * 1000.0 + t->header.stamp.nsec / 1000000.0;
+      orion::BSONDate stamp = orion::BSONDate(t->header.stamp.sec * 1000.0 + t->header.stamp.nsec / 1000000.0);
       
-      BSONObjBuilder transform_stamped;
-      BSONObjBuilder transform;
-      transform_stamped.append("header", BSON(   "seq" << t->header.seq
-					      << "stamp" << stamp
-					      << "frame_id" << t->header.frame_id));
+      orion::BSONObjBuilder transform_stamped, header, transform, translation, rotation;
+      header.append("seq", (int) t->header.seq);
+      header.appendDate("stamp", stamp);
+      header.append("frame_id", t->header.frame_id);
+      transform_stamped.append("header", header.obj());
       transform_stamped.append("child_frame_id", t->child_frame_id);
-      transform.append("translation", BSON(   "x" << t->transform.translation.x
-					   << "y" << t->transform.translation.y
-					   << "z" << t->transform.translation.z));
-      transform.append("rotation", BSON(   "x" << t->transform.rotation.x
-					<< "y" << t->transform.rotation.y
-					<< "z" << t->transform.rotation.z
-					<< "w" << t->transform.rotation.w));
+      translation.append("x", t->transform.translation.x);
+      translation.append("y", t->transform.translation.y);
+      translation.append("z", t->transform.translation.z);
+      transform.append("translation", translation.obj());
+      rotation.append("x", t->transform.rotation.x);
+      rotation.append("y", t->transform.rotation.y);
+      rotation.append("z", t->transform.rotation.z);
+      rotation.append("w", t->transform.rotation.w);
+      transform.append("rotation", rotation.obj());
       transform_stamped.append("transform", transform.obj());
       transforms.push_back(transform_stamped.obj());
     }
   }
   
   if(bDidLogTransforms) {
-    mongodb_conn->insert(collection, BSON("transforms" << transforms <<
-					  "__recorded" << Date_t(time(NULL) * 1000) <<
-					  "__topic" << topic));
+    orion::BSONObjBuilder bob;
+    std::string* err_msg;
+    mongodb_store::appendVector(bob, "transforms", transforms);
+    bob.appendDate("__recorded", orion::BSONDate(time(NULL) * 1000));
+    bob.append("__topic", topic);
+    orion::collectionInsert(mongodb, collection, bob.obj(), err_msg);
     
     // If we'd get access to the message queue this could be more useful
     // https://code.ros.org/trac/ros/ticket/744
@@ -201,7 +207,8 @@ void print_count(const ros::TimerEvent &te) {
 }
 
 int main(int argc, char **argv) {
-  std::string mongodb = "localhost", nodename = "";
+  std::string nodename = "";
+  mongodb = "localhost";
   collection = topic = "";
   
   in_counter = out_counter = drop_counter = qsize = 0;
@@ -250,19 +257,19 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, nodename);
   ros::NodeHandle n;
   
-  std::string errmsg;
-  mongodb_conn = new DBClientConnection(/* auto reconnect*/ true);
-  if (! mongodb_conn->connect(mongodb, errmsg)) {
-    ROS_ERROR("Failed to connect to MongoDB: %s", errmsg.c_str());
-    return -1;
-  }
+  // std::string errmsg;
+  // mongodb_conn = new DBClientConnection(/* auto reconnect*/ true);
+  // if (! mongodb_conn->connect(mongodb, errmsg)) {
+  //   ROS_ERROR("Failed to connect to MongoDB: %s", errmsg.c_str());
+  //   return -1;
+  // }
 
   ros::Subscriber sub = n.subscribe<tf::tfMessage>(topic, 1000, msg_callback);
   ros::Timer count_print_timer = n.createTimer(ros::Duration(5, 0), print_count);
 
   ros::spin();
 
-  delete mongodb_conn;
+  // delete mongodb_conn;
 
   return 0;
 }

@@ -130,16 +130,16 @@ TEST(ROSDatacentre, cppTest)
       p.orientation.z = i;
       messageStore.insert<Pose>(p);
     }
-    if(messageStore.query<Pose>(results, mongo::BSONObj(), mongo::BSONObj(), mongo::BSONObj(),false, 10)){
+    if(messageStore.query<Pose>(results, orion::BSONObj(), orion::BSONObj(), orion::BSONObj(),false, 10)){
       EXPECT_EQ(10, results.size());
     }
     else {
       ADD_FAILURE() << "Documents are not limited";
     }
     results.clear();
-    mongo::BSONObjBuilder builder;
+    orion::BSONObjBuilder builder;
     builder.append("orientation",0);
-    if(messageStore.queryWithProjection<Pose>(results, mongo::BSONObj(), mongo::BSONObj(), mongo::BSONObj(), builder.obj(),false, 10)){
+    if(messageStore.queryWithProjection<Pose>(results, orion::BSONObj(), orion::BSONObj(), orion::BSONObj(), builder.obj(),false, 10)){
       EXPECT_EQ(0,results[1]->orientation.z);
     }
     else {
@@ -159,7 +159,7 @@ TEST(ROSDatacentre, cppTest)
     for (int i = 0; i < 10; ++i) {
       geometry_msgs::Pose p;
       p.orientation.x = i;
-      messageStore.insertNamed<Pose>(no_wait_name, p, mongo::BSONObj(), /* wait = */false);
+      messageStore.insertNamed<Pose>(no_wait_name, p, orion::BSONObj(), /* wait = */false);
     }
     ros::Duration(2.0).sleep();
     results.clear();

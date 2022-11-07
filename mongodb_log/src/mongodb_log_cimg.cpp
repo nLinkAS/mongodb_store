@@ -23,14 +23,15 @@
  */
 
 #include <ros/ros.h>
-#include <mongo/client/dbclient.h>
+// #include <mongo/client/dbclient.h>
+#include "mongoDriver/connectionOperations.h"
 #include <mongodb_store/util.h>
 
 #include <sensor_msgs/CompressedImage.h>
 
-using namespace mongo;
+// using namespace mongo;
 
-DBClientConnection *mongodb_conn;
+std::string mongodb;
 std::string collection;
 
 unsigned int in_counter;
@@ -45,18 +46,20 @@ static pthread_mutex_t qsize_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void msg_callback(const sensor_msgs::CompressedImage::ConstPtr& msg)
 {
-  BSONObjBuilder document;
+  orion::BSONObjBuilder document, header;
 
-  Date_t stamp = msg->header.stamp.sec * 1000.0 + msg->header.stamp.nsec / 1000000.0;
-  document.append("header", BSON(   "seq" << msg->header.seq
-				 << "stamp" << stamp
-				 << "frame_id" << msg->header.frame_id));
+  orion::BSONDate stamp = orion::BSONDate(msg->header.stamp.sec * 1000.0 + msg->header.stamp.nsec / 1000000.0);
+  header.append("seq", (int) msg->header.seq);
+  header.appendDate("stamp", stamp);
+  header.append("frame_id", msg->header.frame_id);
+  document.append("header", header.obj());
   document.append("format", msg->format);
   document.appendBinData("data", msg->data.size(), BinDataGeneral,
 			 const_cast<unsigned char*>(&msg->data[0]));
   
   mongodb_store::add_meta_for_msg<sensor_msgs::CompressedImage>(msg, document);
-  mongodb_conn->insert(collection, document.obj());
+  std::string* err_msg;
+  orion::collectionInsert(mongodb, collection, document.obj(), err_msg);
 
   // If we'd get access to the message queue this could be more useful
   // https://code.ros.org/trac/ros/ticket/744
@@ -96,8 +99,9 @@ void print_count(const ros::TimerEvent &te)
 int
 main(int argc, char **argv)
 {
-  std::string topic = "", mongodb = "localhost", nodename = "";
+  std::string topic = "", nodename = "";
   collection = "";
+  mongodb = "localhost";
 
   in_counter = out_counter = drop_counter = qsize = 0;
 
@@ -128,12 +132,12 @@ main(int argc, char **argv)
   ros::init(argc, argv, nodename);
   ros::NodeHandle n;
 
-  std::string errmsg;
-  mongodb_conn = new DBClientConnection(/* auto reconnect*/ true);
-  if (! mongodb_conn->connect(mongodb, errmsg)) {
-    ROS_ERROR("Failed to connect to MongoDB: %s", errmsg.c_str());
-    return -1;
-  }
+  // std::string errmsg;
+  // mongodb_conn = new DBClientConnection(/* auto reconnect*/ true);
+  // if (! mongodb_conn->connect(mongodb, errmsg)) {
+  //   ROS_ERROR("Failed to connect to MongoDB: %s", errmsg.c_str());
+  //   return -1;
+  // }
 
   ros::Subscriber sub = n.subscribe<sensor_msgs::CompressedImage>(topic, 1000, msg_callback);
   ros::Timer count_print_timer = n.createTimer(ros::Duration(5, 0), print_count);

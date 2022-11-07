@@ -1,4 +1,5 @@
 #include "mongodb_store/message_store.h"
+#include "mongoDriver/safeMongo.h"
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/Point.h"
 #include "geometry_msgs/Quaternion.h"
@@ -60,43 +61,43 @@ int main(int argc, char **argv)
 
 
 	// and add some descriptive information
-	mongo::BSONObjBuilder metaBuilder;
+	orion::BSONObjBuilder metaBuilder;
 	metaBuilder.append("description", "this wasn\'t great, was it?");
-	metaBuilder.append("result_time", mongo::Date_t(ros::Time::now().toSec() * 1000));
+	metaBuilder.appendDate("result_time", orion::BSONDate(ros::Time::now().toSec() * 1000));
 
 	// and store
     messageStore.insert(spl, metaBuilder.obj());
 
     // now let's get all our logged data back, along with meta information
-	vector< pair<boost::shared_ptr<StringPairList>, mongo::BSONObj> > results;
+	vector< pair<boost::shared_ptr<StringPairList>, orion::BSONObj> > results;
 	
 	messageStore.query<StringPairList>(results);
        
 
-	for (vector< pair<boost::shared_ptr<StringPairList>, mongo::BSONObj> >::iterator message_and_meta = results.begin(); message_and_meta != results.end(); ++message_and_meta)
+	for (vector< pair<boost::shared_ptr<StringPairList>, orion::BSONObj> >::iterator message_and_meta = results.begin(); message_and_meta != results.end(); ++message_and_meta)
 	{
 			
 		// Hmmm... this code is ugly
 
 		const boost::shared_ptr<StringPairList> & message = message_and_meta->first;
-		const mongo::BSONObj & meta = message_and_meta->second;
+		const orion::BSONObj & meta = message_and_meta->second;
 
   		if (meta.hasField("description")) {
-  			cout << meta["description"].toString() << endl;
+  			cout << getObjectField(meta, "description").toString() << endl;
   		} 
 
   		// comment this out as toTimeT() doesn't seem to work on Ubuntu...
 
 		// char buff[20];
 
-		// mongo::Date_t result_time;
+		// orion::Date_t result_time;
 		// meta["result_time"].Val(result_time);
 		// time_t t(result_time.toTimeT());
 		// strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&t));
 
 		// cout << "result time (local time from rostime): " << buff << endl;
 
-		// mongo::Date_t inserted_at;
+		// orion::Date_t inserted_at;
 		// meta["inserted_at"].Val(inserted_at);
 		// t = inserted_at.toTimeT();
 		// strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&t));
@@ -104,10 +105,10 @@ int main(int argc, char **argv)
 		// cout << "inserted at (local time from rostime): " << buff << endl;
 
 		// get the objects back
-		pair<boost::shared_ptr<Pose>, mongo::BSONObj> storedPose(messageStore.queryID<Pose>(message->pairs[0].second));
-		pair<boost::shared_ptr<Point>, mongo::BSONObj> storedPoint(messageStore.queryID<Point>(message->pairs[1].second));
-		pair<boost::shared_ptr<Quaternion>, mongo::BSONObj> storedQuaternion(messageStore.queryID<Quaternion>(message->pairs[2].second));		
-		pair<boost::shared_ptr<Bool>, mongo::BSONObj> storedBool(messageStore.queryID<Bool>(message->pairs[3].second));
+		pair<boost::shared_ptr<Pose>, orion::BSONObj> storedPose(messageStore.queryID<Pose>(message->pairs[0].second));
+		pair<boost::shared_ptr<Point>, orion::BSONObj> storedPoint(messageStore.queryID<Point>(message->pairs[1].second));
+		pair<boost::shared_ptr<Quaternion>, orion::BSONObj> storedQuaternion(messageStore.queryID<Quaternion>(message->pairs[2].second));		
+		pair<boost::shared_ptr<Bool>, orion::BSONObj> storedBool(messageStore.queryID<Bool>(message->pairs[3].second));
 
 	}       
 

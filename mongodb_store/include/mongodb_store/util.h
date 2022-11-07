@@ -7,6 +7,7 @@
 //include to get BSON. There's probably a much smaller of set of headers we could get away with
 // #include "mongo/client/dbclient.h"
 #include "mongoDriver/BSONObjBuilder.h"
+#include "mongoDriver/BSONArrayBuilder.h"
 
 
 /*
@@ -42,7 +43,7 @@ void add_meta_for_msg(const typename MsgType::ConstPtr & _msg,  orion::BSONObjBu
 
   	ros::Time now = ros::Time::now();  	
   	orion::BSONDate nowDate((now.sec * 1000.0) + (now.nsec / 1000000.0));	
-	meta.append("inserted_at", nowDate);
+	meta.appendDate("inserted_at", nowDate);
 
   	std::string type(ros::message_traits::DataType<MsgType>::value());
 	meta.append("stored_type", type);
@@ -55,6 +56,26 @@ void add_meta_for_msg(const typename MsgType::ConstPtr & _msg,  orion::BSONObjBu
 
 	_builder.append("_meta", meta.obj());
 
+}
+
+
+// template <class T>
+// inline BSONObjBuilder& BSONObjBuilder::append(const StringData& fieldName,
+//                                               const std::vector<T>& vals) {
+//     BSONObjBuilder arrBuilder;
+//     for (unsigned int i = 0; i < vals.size(); ++i)
+//         arrBuilder.append(numStr(i), vals[i]);
+//     appendArray(fieldName, arrBuilder.done());
+//     return *this;
+// }
+
+void appendVector(orion::BSONObjBuilder& builder, const std::string& fieldName,
+                                              const std::vector<orion::BSONObj>& vals) {
+    orion::BSONArrayBuilder arrBuilder;
+    for (unsigned int i = 0; i < vals.size(); ++i)
+        arrBuilder.append(vals[i]);
+	const orion::BSONArray array = arrBuilder.arr();
+    builder.append(fieldName, array);
 }
 
 }
