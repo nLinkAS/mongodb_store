@@ -18,8 +18,7 @@
 # For those usages not covered by this license please contact with
 # iot_support at tid dot es
 
-# CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-cmake_minimum_required(VERSION 2.8.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 SET (SOURCES
     BSONTypes.cpp
@@ -63,3 +62,9 @@ include_directories("${PROJECT_SOURCE_DIR}/src/lib")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(mongoDriver STATIC ${SOURCES} ${HEADERS})
+target_link_libraries(mongoDriver
+  ${catkin_LIBRARIES}
+  ${MONGOC_LIBRARIES}
+  lm
+  alarmMgr
+)

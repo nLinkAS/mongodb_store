@@ -25,6 +25,8 @@ find_package(catkin REQUIRED COMPONENTS roscpp message_generation rospy std_msgs
 
 set(CMAKE_MODULE_PATH   ${PROJECT_SOURCE_DIR}/cmake)
 # find_package(mongoDriver REQUIRED)
+find_package (libmongoc-1.0 1.16.1)
+find_package (libbson-1.0)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -82,6 +84,7 @@ catkin_package(
 include_directories(
   include
   mongoDriver
+  lm
   ${catkin_INCLUDE_DIRS}
 )
 # Needed for the new C driver
@@ -93,7 +96,7 @@ link_directories(${catkin_LINK_DIRS})
 add_library(message_store src/message_store.cpp )
 
 add_executable(example_mongodb_store_cpp_client src/example_mongodb_store_cpp_client.cpp)
-add_executable(example_multi_event_log src/example_multi_event_log.cpp)
+#add_executable(example_multi_event_log src/example_multi_event_log.cpp)
 # add_executable(pc_test src/point_cloud_test.cpp)
 
 
@@ -102,6 +105,7 @@ add_dependencies(message_store mongodb_store_msgs_generate_messages_cpp )
 
 target_link_libraries(message_store
   mongoDriver
+  lm
   ${catkin_LIBRARIES}
 )
 
@@ -111,20 +115,23 @@ target_link_libraries(message_store
 target_link_libraries(example_mongodb_store_cpp_client
   message_store
   mongoDriver
+  lm
   ${catkin_LIBRARIES}  
 )
 
-target_link_libraries(example_multi_event_log
-  message_store
-  mongoDriver
-  ${catkin_LIBRARIES}  
-)
+#target_link_libraries(example_multi_event_log
+#  message_store
+#  mongoDriver
+#  lm
+#  ${catkin_LIBRARIES}  
+#)
 
-target_link_libraries(example_multi_event_log
-  message_store
-  mongoDriver
-  ${catkin_LIBRARIES}  
-)
+#target_link_libraries(example_multi_event_log
+#  message_store
+#  mongoDriver
+#  lm
+#  ${catkin_LIBRARIES}  
+#)
 
 
 #############
@@ -161,7 +168,7 @@ install(DIRECTORY include/mongodb_store/
 )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS example_mongodb_store_cpp_client example_multi_event_log message_store #pc_test
+install(TARGETS example_mongodb_store_cpp_client #example_multi_event_log message_store #pc_test
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

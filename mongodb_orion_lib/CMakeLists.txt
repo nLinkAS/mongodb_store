@@ -29,6 +29,7 @@ cmake_minimum_required(VERSION 3.0)
 catkin_package(
     INCLUDE_DIRS src/lib
     LIBRARIES mongoDriver
+    DEPENDS libbson libmongoc
 )
 
 #
@@ -228,6 +229,7 @@ SET (BOOST_MT
 # SET for common static libs. We use 1.17.4 as reference version.
 #find_package (mongoc-1.0 1.17.4 EXACT)
 find_package (libmongoc-1.0 1.16.1)
+find_package (libbson-1.0)
 
 # Static libs common to contextBroker and unitTest binaries
 #SET (COMMON_STATIC_LIBS
@@ -299,14 +301,14 @@ endif (UNIT_TEST)
 if (error EQUAL 0)
   MESSAGE("cmake: OK")
   ADD_SUBDIRECTORY(src/lib/logMsg)
-  #ADD_SUBDIRECTORY(src/lib/parseArgs)
+  ADD_SUBDIRECTORY(src/lib/parseArgs)
   #ADD_SUBDIRECTORY(src/lib/common)
-  #ADD_SUBDIRECTORY(src/lib/orionTypes)
-  #ADD_SUBDIRECTORY(src/lib/ngsi)
+  ADD_SUBDIRECTORY(src/lib/orionTypes)
+  ADD_SUBDIRECTORY(src/lib/ngsi)
   #ADD_SUBDIRECTORY(src/lib/serviceRoutines)
   #ADD_SUBDIRECTORY(src/lib/serviceRoutinesV2)
   #ADD_SUBDIRECTORY(src/lib/convenience)
-  #ADD_SUBDIRECTORY(src/lib/ngsi9)
+  ADD_SUBDIRECTORY(src/lib/ngsi9)
   #ADD_SUBDIRECTORY(src/lib/ngsi10)
   #ADD_SUBDIRECTORY(src/lib/ngsiNotify)
   #ADD_SUBDIRECTORY(src/lib/apiTypesV2)
@@ -314,19 +316,24 @@ if (error EQUAL 0)
   #ADD_SUBDIRECTORY(src/lib/jsonParse)
   #ADD_SUBDIRECTORY(src/lib/jsonParseV2)
   #ADD_SUBDIRECTORY(src/lib/rest)
-  #ADD_SUBDIRECTORY(src/lib/mongoBackend)
+  ADD_SUBDIRECTORY(src/lib/mongoBackend)
   ADD_SUBDIRECTORY(src/lib/mongoDriver)
-  #ADD_SUBDIRECTORY(src/lib/cache)
-  #ADD_SUBDIRECTORY(src/lib/alarmMgr)
+  ADD_SUBDIRECTORY(src/lib/cache)
+  ADD_SUBDIRECTORY(src/lib/alarmMgr)
   #ADD_SUBDIRECTORY(src/lib/metricsMgr)
-  #ADD_SUBDIRECTORY(src/lib/logSummary)
+  ADD_SUBDIRECTORY(src/lib/logSummary)
   #ADD_SUBDIRECTORY(src/lib/mqtt)
   #ADD_SUBDIRECTORY(src/app/contextBroker)
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)
 
+#target_link_libraries(mongoDriver
+#  ${catkin_LIBRARIES}
+#  ${MONGOC_LIBRARIES}
+#)
+
 # Mark cpp header files for installation
-install(DIRECTORY src/lib/mongoDriver/
+install(DIRECTORY src/lib/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
