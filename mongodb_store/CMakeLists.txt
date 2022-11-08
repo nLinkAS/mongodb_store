@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mongodb_store)
 
+set(CMAKE_VERBOSE_MAKEFILE on)
+
 # for ROS indigo compile without c++11 support
 if(DEFINED ENV{ROS_DISTRO})
   if(NOT $ENV{ROS_DISTRO} STREQUAL "indigo")
@@ -84,7 +86,6 @@ catkin_package(
 include_directories(
   include
   mongoDriver
-  lm
   ${catkin_INCLUDE_DIRS}
 )
 # Needed for the new C driver
@@ -95,29 +96,26 @@ link_directories(${catkin_LINK_DIRS})
 
 add_library(message_store src/message_store.cpp )
 
-add_executable(example_mongodb_store_cpp_client src/example_mongodb_store_cpp_client.cpp)
+#add_executable(example_mongodb_store_cpp_client src/example_mongodb_store_cpp_client.cpp)
 #add_executable(example_multi_event_log src/example_multi_event_log.cpp)
 # add_executable(pc_test src/point_cloud_test.cpp)
 
 
-add_dependencies(example_mongodb_store_cpp_client mongodb_store_msgs_generate_messages_cpp )
+#add_dependencies(example_mongodb_store_cpp_client mongodb_store_msgs_generate_messages_cpp )
 add_dependencies(message_store mongodb_store_msgs_generate_messages_cpp )
 
 target_link_libraries(message_store
   mongoDriver
-  lm
   ${catkin_LIBRARIES}
 )
 
 
 
 # Specify libraries to link a library or executable target against
-target_link_libraries(example_mongodb_store_cpp_client
-  message_store
-  mongoDriver
-  lm
-  ${catkin_LIBRARIES}  
-)
+#target_link_libraries(example_mongodb_store_cpp_client
+#  message_store
+#  ${catkin_LIBRARIES}
+#)
 
 #target_link_libraries(example_multi_event_log
 #  message_store
@@ -168,7 +166,7 @@ install(DIRECTORY include/mongodb_store/
 )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS example_mongodb_store_cpp_client #example_multi_event_log message_store #pc_test
+install(TARGETS #example_mongodb_store_cpp_client #example_multi_event_log message_store #pc_test
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -179,7 +177,7 @@ install(TARGETS example_mongodb_store_cpp_client #example_multi_event_log messag
 ## Testing ##
 #############
 
-if (CATKIN_ENABLE_TESTING)
+if (false)
   find_package(catkin REQUIRED COMPONENTS rostest)
 
   # add_rostest(tests/message_store.test)
@@ -193,6 +191,8 @@ if (CATKIN_ENABLE_TESTING)
     ${OPENSSL_LIBRARIES}
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
+    ${ORION_LIBS}
+    lm
     gtest
   )
 

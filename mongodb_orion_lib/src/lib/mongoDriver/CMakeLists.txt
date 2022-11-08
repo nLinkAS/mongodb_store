@@ -65,6 +65,7 @@ ADD_LIBRARY(mongoDriver STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(mongoDriver
   ${catkin_LIBRARIES}
   ${MONGOC_LIBRARIES}
-  lm
-  alarmMgr
+  ${ORION_LIBS}
+  #lm
+  #alarmMgr
 )

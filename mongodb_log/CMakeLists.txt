@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mongodb_log)
+set(CMAKE_VERBOSE_MAKEFILE on)
 
 # for ROS indigo build without C++11 support
 # for ROS indigo compile without c++11 support
@@ -94,16 +95,19 @@ include_directories("/usr/include/libbson-1.0")
 # )
 
 #link_libraries(mongoclient)
-add_executable(mongodb_log_tf src/mongodb_log_tf.cpp)
+#add_executable(mongodb_log_tf src/mongodb_log_tf.cpp)
 #add_executable(mongodb_log_pcl src/mongodb_log_pcl.cpp)
 #add_executable(mongodb_log_cimg src/mongodb_log_cimg.cpp)
 
 # rosbuild_add_executable(rosmongodb_log_trimesh src/rosmongodb_log_trimesh.cpp)
-target_link_libraries(mongodb_log_tf
-  ${catkin_LIBRARIES}   
-  ${OPENSSL_LIBRARIES}
-  ${Boost_LIBRARIES}
-)
+#link_libraries("--copy-dt-needed-entries")
+#target_link_libraries(mongodb_log_tf
+#  -Wl,--copy-dt-needed-entries
+#  ${catkin_LIBRARIES}   
+#  ${OPENSSL_LIBRARIES}
+#  ${Boost_LIBRARIES}
+#  ${ORION_LIBS}
+#)
 #target_link_libraries(mongodb_log_pcl
 #  ${catkin_LIBRARIES}   
 #  ${OPENSSL_LIBRARIES}
@@ -149,7 +153,7 @@ catkin_install_python(PROGRAMS
 
 
 ## Mark executables and/or libraries for installation
-install(TARGETS mongodb_log_tf #mongodb_log_cimg mongodb_log_pcl
+install(TARGETS #mongodb_log_tf #mongodb_log_cimg mongodb_log_pcl
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

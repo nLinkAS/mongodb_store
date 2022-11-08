@@ -17,5 +17,8 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>catkin</build_depend>
   <build_depend>libmongoc-dev</build_depend>
-  
+  <build_depend>libmicrohttpd</build_depend>
+  <build_depend>mosquitto-dev</build_depend>
+  <build_depend>rapidjson-dev</build_depend>
+  <build_depend>uuid</build_depend>
 </package>

@@ -23,6 +23,8 @@
 #
 PROJECT(mongodb_orion_lib)
 
+set(CMAKE_VERBOSE_MAKEFILE on)
+
 # find_package() for mongo driver doesn't work with cmake 2
 cmake_minimum_required(VERSION 3.0)
 
@@ -52,6 +54,8 @@ execute_process(COMMAND            echo $USER
 
 execute_process(COMMAND            sh ../scripts/build/osDistro.sh
                 OUTPUT_VARIABLE    DISTRO)
+
+execute_process(COMMAND sh ../scripts/compileInfo.sh)
 
 # TRACES: To remove LM_T
 #           [ and 15 log macros more, of which only LM_T is used by the broker.
@@ -182,32 +186,32 @@ endif (${CMAKE_BUILD_TYPE} STREQUAL DEBUG)
 #
 
 SET (ORION_LIBS
-    #common
-    #serviceRoutines
-    #serviceRoutinesV2
-    #ngsiNotify
-    #rest          # verbName(Verb) from setExtendedHttpInfo@MongoCommonSubscription.cpp.o; jsonRequestTreat from payloadParse@RestService.cpp.o;
-    #jsonParse
-    #jsonParseV2
-    #rest          # this is repeated for linking str2Verb from parseSubscription@parseSubscription.cpp.o;
+    common
+    serviceRoutines
+    serviceRoutinesV2
+    ngsiNotify
+    rest          # verbName(Verb) from setExtendedHttpInfo@MongoCommonSubscription.cpp.o; jsonRequestTreat from payloadParse@RestService.cpp.o;
+    jsonParse
+    jsonParseV2
+    rest          # this is repeated for linking str2Verb from parseSubscription@parseSubscription.cpp.o;
                   # verbName(Verb) from setExtendedHttpInfo@MongoCommonSubscription.cpp.o
-    #convenience
-    #ngsi9
-    #ngsi10
-    #ngsi
-    #cache
-    #mongoBackend
+    convenience
+    ngsi9
+    ngsi10
+    ngsi
+    cache
+    mongoBackend
     mongoDriver
-    #parse
-    #apiTypesV2
-    #orionTypes
-    #common
-    #alarmMgr
-    #metricsMgr
-    #logSummary
-    #lm
-    #pa
-    #mqtt
+    parse
+    apiTypesV2
+    orionTypes
+    common
+    alarmMgr
+    metricsMgr
+    logSummary
+    lm
+    pa
+    mqtt
 )
 
 SET (BOOST
@@ -232,11 +236,11 @@ find_package (libmongoc-1.0 1.16.1)
 find_package (libbson-1.0)
 
 # Static libs common to contextBroker and unitTest binaries
-#SET (COMMON_STATIC_LIBS
-#    microhttpd.a
-#    mosquitto.a
+SET (COMMON_STATIC_LIBS
+    microhttpd.a
+    mosquitto.a
 #    mongo::mongoc_static
-#)
+)
 
 SET (DYNAMIC_LIBS
     curl
@@ -244,7 +248,7 @@ SET (DYNAMIC_LIBS
     pthread
     gcrypt
     ssl
-    uuid
+    #uuid
     crypto
     sasl2
 )
@@ -302,27 +306,27 @@ if (error EQUAL 0)
   MESSAGE("cmake: OK")
   ADD_SUBDIRECTORY(src/lib/logMsg)
   ADD_SUBDIRECTORY(src/lib/parseArgs)
-  #ADD_SUBDIRECTORY(src/lib/common)
+  ADD_SUBDIRECTORY(src/lib/common)
   ADD_SUBDIRECTORY(src/lib/orionTypes)
   ADD_SUBDIRECTORY(src/lib/ngsi)
-  #ADD_SUBDIRECTORY(src/lib/serviceRoutines)
-  #ADD_SUBDIRECTORY(src/lib/serviceRoutinesV2)
-  #ADD_SUBDIRECTORY(src/lib/convenience)
+  ADD_SUBDIRECTORY(src/lib/serviceRoutines)
+  ADD_SUBDIRECTORY(src/lib/serviceRoutinesV2)
+  ADD_SUBDIRECTORY(src/lib/convenience)
   ADD_SUBDIRECTORY(src/lib/ngsi9)
-  #ADD_SUBDIRECTORY(src/lib/ngsi10)
-  #ADD_SUBDIRECTORY(src/lib/ngsiNotify)
-  #ADD_SUBDIRECTORY(src/lib/apiTypesV2)
-  #ADD_SUBDIRECTORY(src/lib/parse)
-  #ADD_SUBDIRECTORY(src/lib/jsonParse)
-  #ADD_SUBDIRECTORY(src/lib/jsonParseV2)
-  #ADD_SUBDIRECTORY(src/lib/rest)
+  ADD_SUBDIRECTORY(src/lib/ngsi10)
+  ADD_SUBDIRECTORY(src/lib/ngsiNotify)
+  ADD_SUBDIRECTORY(src/lib/apiTypesV2)
+  ADD_SUBDIRECTORY(src/lib/parse)
+  ADD_SUBDIRECTORY(src/lib/jsonParse)
+  ADD_SUBDIRECTORY(src/lib/jsonParseV2)
+  ADD_SUBDIRECTORY(src/lib/rest)
   ADD_SUBDIRECTORY(src/lib/mongoBackend)
   ADD_SUBDIRECTORY(src/lib/mongoDriver)
   ADD_SUBDIRECTORY(src/lib/cache)
   ADD_SUBDIRECTORY(src/lib/alarmMgr)
-  #ADD_SUBDIRECTORY(src/lib/metricsMgr)
+  ADD_SUBDIRECTORY(src/lib/metricsMgr)
   ADD_SUBDIRECTORY(src/lib/logSummary)
-  #ADD_SUBDIRECTORY(src/lib/mqtt)
+  ADD_SUBDIRECTORY(src/lib/mqtt)
   #ADD_SUBDIRECTORY(src/app/contextBroker)
 else ()
     MESSAGE("cmake: NOT OK")
