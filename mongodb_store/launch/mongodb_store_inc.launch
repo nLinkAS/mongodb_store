@@ -7,6 +7,7 @@
   <arg name="defaults_path" default=""/>
   <arg name="replicator_dump_path" default="/tmp/replicator_dumps"/>
   <arg name="use_daemon" default="false" />
+  <arg name="launch_replicator" default="true" />
 
   <arg name="machine"/>
   <arg name="test_mode" default="false" />
@@ -34,7 +35,7 @@
   	<group unless="$(arg test_mode)">
   		<param name="mongodb_port" value="$(arg port)" />
   		<param name="mongodb_host" value="$(optenv HOSTNAME localhost)" />
-   
+
   	  <node name="mongo_server" pkg="mongodb_store" type="mongodb_server.py" machine="$(arg machine)">
         <param name="bind_to_host" value="$(arg bind_to_host)"/>
   	    <param name="database_path" value="$(arg db_path)"/>
@@ -48,14 +49,16 @@
     <param name="warn_if_stored_param_has_no_default" value="$(arg warn_if_stored_param_has_no_default)"/>
   </node>
 
-  <node name="message_store" pkg="mongodb_store" type="message_store_node.py" machine="$(arg machine)" > 
+  <node name="message_store" pkg="mongodb_store" type="message_store_node.py" machine="$(arg machine)" >
 	<param name="mongodb_use_localdatacenter" value="$(arg use_localdatacenter)" />
   <param name="queue_size" value="$(arg queue_size)" />
   </node> <!-- output="screen" -->
 
-  <node name="replicator_node" pkg="mongodb_store" type="replicator_node.py" machine="$(arg machine)">
-    <param name="replicator_dump_path" value="$(arg replicator_dump_path)"/>
-  </node>
+  <group if="$(arg launch_replicator)">
+    <node name="replicator_node" pkg="mongodb_store" type="replicator_node.py" machine="$(arg machine)">
+      <param name="replicator_dump_path" value="$(arg replicator_dump_path)"/>
+    </node>
+  </group>
 
 </launch>
 
