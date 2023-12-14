@@ -25,7 +25,6 @@
   <arg name="warn_if_stored_param_has_no_default" default="false" />
 
   <arg name="launch_config" default="true" />
-  <arg name="launch_replicator" default="true" />
 
   <machine name="$(arg machine)" address="$(arg machine)" env-loader="$(optenv ROS_ENV_LOADER )" user="$(arg user)"/>
 
@@ -46,7 +45,6 @@
     <arg name="launch_replicator" default="$(arg launch_replicator)" />
     <arg name="use_localdatacenter" value="$(arg use_localdatacenter)" />
     <arg name="warn_if_stored_param_has_no_default" value="$(arg warn_if_stored_param_has_no_default)" />
-    <arg name="launch_replicator" default="$(arg launch_replicator)" />
   </include>
 
 </launch>
